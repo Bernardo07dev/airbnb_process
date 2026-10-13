@@ -1,0 +1,161 @@
+from bisect import bisect_right
+from collections import deque
+from heapq import nsmallest
+
+DAY = 86400000  # 24 horas em milissegundos
+
+
+class BankingSystemImpl(BankingSystem):
+    """
+    Cada criacao de conta recebe um uid interno unico. Isso permite
+    - recriar um ID removido por merge com historico novo e independente
+    - resolver o dono atual de um pagamento via union-find, sem varrer pagamentos no merge
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.active = {}        # account_id -> uid (somente contas existentes)
+        self.parent = []        # union-find por uid
+        self.balance = []       # saldo por uid
+        self.spent = []         # total gasto por uid
+        self.times = []         # historico de timestamps por uid
+        self.vals = []          # historico de saldos por uid
+        self.removed = []       # timestamp de remocao por uid (ou None)
+        self.lives = {}         # account_id -> ([created_at], [uid]) para get_balance
+        self.pay_uid = {}       # payment_id -> uid do dono na criacao
+        self.pay_status = {}    # payment_id -> status
+        self.pending = deque()  # (vencimento, payment_id, cashback), ordenado por vencimento
+        self.payment_seq = 0
+
+    # ---------- utilitarios ----------
+    def _find(self, u):
+        root = u
+        while self.parent[root] != root:
+            root = self.parent[root]
+        while self.parent[u] != root:
+            self.parent[u], u = root, self.parent[u]
+        return root
+
+    def _record(self, ts, u):
+        if self.times[u][-1] == ts:
+            self.vals[u][-1] = self.balance[u]
+        else:
+            self.times[u].append(ts)
+            self.vals[u].append(self.balance[u])
+
+    def _process_cashbacks(self, ts):
+        while self.pending and self.pending[0][0] <= ts:
+            due, pid, cashback = self.pending.popleft()
+            self.pay_status[pid] = "CASHBACK_RECEIVED"
+            u = self._find(self.pay_uid[pid])
+            self.balance[u] += cashback
+            self._record(due, u)
+
+    # ---------- Level 1 ----------
+    def create_account(self, timestamp, account_id):
+        self._process_cashbacks(timestamp)
+        if account_id in self.active:
+            return False
+        u = len(self.parent)
+        self.active[account_id] = u
+        self.parent.append(u)
+        self.balance.append(0)
+        self.spent.append(0)
+        self.times.append([timestamp])
+        self.vals.append([0])
+        self.removed.append(None)
+        created, uids = self.lives.setdefault(account_id, ([], []))
+        created.append(timestamp)
+        uids.append(u)
+        return True
+
+    def deposit(self, timestamp, account_id, amount):
+        self._process_cashbacks(timestamp)
+        u = self.active.get(account_id)
+        if u is None:
+            return None
+        self.balance[u] += amount
+        self._record(timestamp, u)
+        return self.balance[u]
+
+    def transfer(self, timestamp, source_account_id, target_account_id, amount):
+        self._process_cashbacks(timestamp)
+        s = self.active.get(source_account_id)
+        t = self.active.get(target_account_id)
+        if s is None or t is None or s == t or self.balance[s] < amount:
+            return None
+        self.balance[s] -= amount
+        self.balance[t] += amount
+        self.spent[s] += amount
+        self._record(timestamp, s)
+        self._record(timestamp, t)
+        return self.balance[s]
+
+    # ---------- Level 2 ----------
+    def top_spenders(self, timestamp, n):
+        self._process_cashbacks(timestamp)
+        spent = self.spent
+        items = [(-spent[u], acc) for acc, u in self.active.items()]
+        # com n grande, ordenar tudo e mais rapido que manter um heap
+        best = sorted(items) if n >= len(items) else nsmallest(n, items)
+        return [f"{acc}({-value})" for value, acc in best]
+
+    # ---------- Level 3 ----------
+    def pay(self, timestamp, account_id, amount):
+        self._process_cashbacks(timestamp)
+        u = self.active.get(account_id)
+        if u is None or self.balance[u] < amount:
+            return None
+        self.payment_seq += 1
+        pid = f"payment{self.payment_seq}"
+        self.balance[u] -= amount
+        self.spent[u] += amount
+        self._record(timestamp, u)
+        self.pay_uid[pid] = u
+        self.pay_status[pid] = "IN_PROGRESS"
+        self.pending.append((timestamp + DAY, pid, amount * 2 // 100))
+        return pid
+
+    def get_payment_status(self, timestamp, account_id, payment):
+        self._process_cashbacks(timestamp)
+        u = self.active.get(account_id)
+        if u is None or payment not in self.pay_uid:
+            return None
+        if self._find(self.pay_uid[payment]) != u:
+            return None
+        return self.pay_status[payment]
+
+    # ---------- Level 4 ----------
+    def merge_accounts(self, timestamp, account_id_1, account_id_2):
+        self._process_cashbacks(timestamp)
+        if account_id_1 == account_id_2:
+            return False
+        u1 = self.active.get(account_id_1)
+        u2 = self.active.get(account_id_2)
+        if u1 is None or u2 is None:
+            return False
+        self.balance[u1] += self.balance[u2]
+        self.spent[u1] += self.spent[u2]
+        self.parent[u2] = u1
+        self.removed[u2] = timestamp
+        del self.active[account_id_2]
+        self._record(timestamp, u1)
+        return True
+
+    def get_balance(self, timestamp, account_id, time_at):
+        self._process_cashbacks(timestamp)
+        life = self.lives.get(account_id)
+        if life is None:
+            return None
+        created, uids = life
+        i = bisect_right(created, time_at) - 1
+        if i < 0:
+            return None
+        u = uids[i]
+        removed = self.removed[u]
+        if removed is not None and time_at >= removed:
+            return None
+        j = bisect_right(self.times[u], time_at) - 1
+        if j < 0:
+            return None
+        return self.vals[u][j]
