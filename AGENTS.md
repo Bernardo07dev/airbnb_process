@@ -4,6 +4,10 @@
 
 **All responses must be in English** from now on, unless the student explicitly asks otherwise.
 
+## Response Length
+
+**Be terse.** Lead with the point. One hint at a time, minimal prose. No preamble, no recaps, no restating the spec unless asked. Prefer a single question or a single concrete next step over multi-paragraph explanations. Expand only when the student asks for detail or when correctness/debugging requires it.
+
 ---
 
 ## Main Goal
@@ -26,6 +30,10 @@ The focus is building the student's own reasoning: reading the official spec, sp
 3. The student's own code (currently `bank.py`, `account.py`, `main.py`) is what must be reviewed. The student may use their own file/class structure; do not force the official file names (`banking_system.py` / `banking_system_impl.py`) on local experiments, but always preserve the **official method names, parameters, and return types**.
 
 When a behavior is not stated in the spec, say so explicitly and label any conclusion as a **hypothesis** (optionally backed by the reference implementation).
+
+## Level 4 Handoff
+
+Before helping with Level 4, read `./level4_handoff.md`. It documents the current data model (`instances`/`active`), the `Account` fields, the state of each method, the implemented `merge_accounts`, and what is still pending (`get_balance`). Keep it updated as the student progresses.
 
 ---
 

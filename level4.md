@@ -19,11 +19,15 @@ Returns the balance of `account_id` at `time_at`. Returns `None` if the account 
 
 ## merge rules
 
-- `account_id_2`'s balance is added to `account_id_1`.
-- Pending cashbacks for `account_id_2` must still be processed, but refunded to `account_id_1`.
-- After the merge, `get_payment_status` for `account_id_2`'s payments must work when called with `account_id_1`.
-- `top_spenders` outgoing = sum of money transferred/withdrawn by both accounts.
-- `account_id_2` is removed from the system after the merge.
+`account_id_2`'s balance is added to `account_id_1`.
+
+Pending cashbacks for `account_id_2` must still be processed, but refunded to `account_id_1`.
+
+After the merge, `get_payment_status` for `account_id_2`'s payments must work when called with `account_id_1`.
+
+`top_spenders` outgoing = sum of money transferred/withdrawn by both accounts.
+
+`account_id_2` is removed from the system after the merge.
 
 ## get_balance rules
 
