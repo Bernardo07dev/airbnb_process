@@ -1,5 +1,6 @@
 from account import Account
 from payments import Payment
+from cashback import Cashback
 
 class Bank():
     def __init__(self):
@@ -50,7 +51,11 @@ class Bank():
         self.accounts[account_id].balance -= amount
         self.accounts[account_id].outgoing -= amount
 
-        self.payments[f"payment{timestamp}"] = Payment(self.accounts[account_id], f"payment{timestamp}", amount, "IN_PROGRESS", timestamp)
+        self.payments[f"payment{timestamp}"] = Payment(self.accounts[account_id], f"payment{timestamp}", amount, timestamp)
+        self.cashbacks[timestamp] = Cashback(timestamp, amount)
+
+    def get_payment_status(self, timestamp: int, account_id: str, payment: str) -> str | None:
+        return None
 
     def print_acc(self):
         for ac in self.accounts.values():
