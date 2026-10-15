@@ -136,6 +136,26 @@ class Bank():
         return True
 
     def get_balance(self, timestamp: int, account_id: str, time_at: int) -> int | None:
+        self.cashback_desc(timestamp)
+        for acc in self.instances.values():
+            if acc.account_id == account_id:
+                if acc.created <= time_at and (not acc.removed or acc.removed > time_at):
+                    if not acc.history:
+                        return 0
+
+                    if acc.history[0][0] > time_at:
+                        return 0
+
+                    last_h = acc.history[0]
+
+                    for h in acc.history:
+                        if h[0] > time_at:
+                            return last_h[1]
+                        last_h = h
+
+                    return last_h[1]
+        return None
+
     
 
     #============HELPER============

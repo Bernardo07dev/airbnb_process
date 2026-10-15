@@ -36,3 +36,16 @@ print(my_bank.pay(86400010, "alice", 500))
 print(my_bank.get_payment_status(86400011, "alice", "payment5"))
 print(my_bank.get_payment_status(86400012, "bob", "payment6"))
 my_bank.print_acc()
+
+print("\n--- TESTES LEVEL 4 ---")
+print("1. Antes da criação (esperado None):", my_bank.get_balance(100, "alice", 0))
+print("2. No instante da criação (esperado 0):", my_bank.get_balance(100, "alice", 1))
+print("3. Após depósito tempo 3 (esperado 2000):", my_bank.get_balance(100, "alice", 3))
+print("4. Após pay tempo 5 (esperado 1500):", my_bank.get_balance(100, "alice", 5))
+
+print("\nExecutando merge_accounts(90000000, 'alice', 'bob')...")
+print("Merge realizado:", my_bank.merge_accounts(90000000, "alice", "bob"))
+
+print("5. Bob antes do merge em tempo 86400006 (esperado 1020):", my_bank.get_balance(90000001, "bob", 86400006))
+print("6. Bob a partir do merge em tempo 90000000 (esperado None):", my_bank.get_balance(90000001, "bob", 90000000))
+print("7. Alice após o merge em tempo 90000000 (esperado 1148):", my_bank.get_balance(90000001, "alice", 90000000))
