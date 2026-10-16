@@ -1,6 +1,6 @@
 class Cashback():
-      def __init__(self, account_id, payment_id, raw_value, due):
-            self.account_id = account_id
-            self.payment_id = payment_id
-            self.cash_value = raw_value * 2 // 100
-            self.due = due
+    def __init__(self, payment_id, account_id, amount, timestamp):
+        self.payment_id = payment_id
+        self.account_id = account_id
+        self.cash_value = amount * 2 // 100
+        self.due = timestamp + 86400000

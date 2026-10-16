@@ -18,9 +18,58 @@ The student is preparing for the real assessment and will now **code completely 
 
 ---
 
-## Strategy & Architectural Decisions (Learned from Iteration)
+## How to Work & Step-by-Step Workflow
 
-This section documents the verified architecture and algorithmic decisions developed to solve Levels 1–4 cleanly and pass all performance and edge-case requirements:
+1. **Target File for Implementation:**
+   - All code must be written in [`banking_system_impl.py`](file:///c:/Users/berna/Documents/Projects/airbnb_test/banking_system_impl.py) by inheriting from `BankingSystem` (defined in [`banking_system.py`](file:///c:/Users/berna/Documents/Projects/airbnb_test/banking_system.py)).
+   - Do NOT edit [`banking_system.py`](file:///c:/Users/berna/Documents/Projects/airbnb_test/banking_system.py) or test files.
+
+2. **Step-by-Step Practice Flow:**
+   - **Step 1:** Read the requirements for Level 1 in [`level1.md`](file:///c:/Users/berna/Documents/Projects/airbnb_test/level1.md).
+   - **Step 2:** Implement the methods (`create_account`, `deposit`, `transfer`) in [`banking_system_impl.py`](file:///c:/Users/berna/Documents/Projects/airbnb_test/banking_system_impl.py).
+   - **Step 3:** Run Level 1 tests in the terminal.
+   - **Step 4:** Once all Level 1 tests pass, move to Level 2 ([`level2.md`](file:///c:/Users/berna/Documents/Projects/airbnb_test/level2.md)) and repeat until Level 4.
+
+---
+
+## Test Suites & How to Run Each Level
+
+Each level has a dedicated unit test suite in the `tests/` directory with a 0.4s timeout decorator simulating CodeSignal:
+
+### Run Individual Level Tests:
+- **Level 1** (`create_account`, `deposit`, `transfer`):
+  ```powershell
+  python -m unittest tests/test_level1.py
+  ```
+- **Level 2** (`top_spenders` ranking and ties):
+  ```powershell
+  python -m unittest tests/test_level2.py
+  ```
+- **Level 3** (`pay`, payment status, delayed cashback queue):
+  ```powershell
+  python -m unittest tests/test_level3.py
+  ```
+- **Level 4** (`merge_accounts`, existence window, `get_balance`):
+  ```powershell
+  python -m unittest tests/test_level4.py
+  ```
+
+### Run Sandbox Playground:
+- CodeSignal provides a sandbox playground where you can write custom one-off tests:
+  ```powershell
+  python -m unittest test.py
+  ```
+
+### Run All Levels Together (Full Verification):
+```powershell
+python -m unittest discover -s tests -p "test_*.py"
+```
+
+---
+
+## Strategy & Architectural Decisions (Cheat Sheet)
+
+Use this architectural blueprint if you need to recall how each subsystem was designed:
 
 ### 1. Domain Modeling & Separation of Concerns
 Instead of monolithic nested dictionaries, divide the system into dedicated domain entities:
